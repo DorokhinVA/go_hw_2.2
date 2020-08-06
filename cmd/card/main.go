@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/card"
+	"github.com/DorokhinVA/go_hw_2.2/pkg/transaction"
+	"github.com/DorokhinVA/go_hw_2.2/pkg/transfer"
 )
 
 func main() {

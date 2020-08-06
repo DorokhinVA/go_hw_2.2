@@ -1,6 +1,7 @@
 package transaction
 
 import (
+	"github.com/DorokhinVA/go_hw_2.2/pkg/card"
 	"time"
 )
 
