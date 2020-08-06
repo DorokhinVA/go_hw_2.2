@@ -1,6 +1,7 @@
 package transfer
 
 import (
+	"errors"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/card"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/transaction"
 	"math"
@@ -19,7 +20,11 @@ func NewService(cardSvc *card.Service, mainFeePercent float64, anotherFeePercent
 	return &Service{CardSvc: cardSvc, MainFeePercent: mainFeePercent, AnotherFeePercent: anotherFeePercent, MinFee: minFee}
 }
 
-func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool) {
+var (
+	ErrNotEnoughMoney = errors.New("not enough money on source card")
+)
+
+func (s *Service) Card2Card(from, to string, amount int64) (total int64, error error) {
 	fromCard := s.CardSvc.SearchByNumber(from)
 	toCard := s.CardSvc.SearchByNumber(to)
 
@@ -33,7 +38,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 
 	if fromCard != nil {
 		if fromCard.Balance < total {
-			return total, ok
+			return total, ErrNotEnoughMoney
 		}
 
 		card.Withdraw(fromCard, total)
@@ -63,7 +68,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, ok bool
 		})
 	}
 
-	return total, true
+	return total, nil
 
 }
 
