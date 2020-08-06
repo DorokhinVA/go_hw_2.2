@@ -2,6 +2,7 @@ package transfer
 
 import (
 	"errors"
+	"fmt"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/card"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/transaction"
 	"math"
@@ -21,22 +22,46 @@ func NewService(cardSvc *card.Service, mainFeePercent float64, anotherFeePercent
 }
 
 var (
-	ErrNotEnoughMoney = errors.New("not enough money on source card")
+	ErrNotEnoughMoney     = errors.New("not enough money on source card")
+	ErrSourceCardNotFound = errors.New("source card not found")
+	ErrTargetCardNotFound = errors.New("target card not found")
 )
 
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, error error) {
-	fromCard := s.CardSvc.SearchByNumber(from)
-	toCard := s.CardSvc.SearchByNumber(to)
-
+	var fromMain bool
+	var toMain bool
 	var fee int64
-	if fromCard == nil {
-		fee = s.calculateFee(amount, false)
-	} else {
+
+	fromCard, err := s.CardSvc.SearchByNumber(from)
+	if err == nil {
 		fee = s.calculateFee(amount, true)
+		fromMain = true
+	} else {
+		switch err {
+		case card.ErrAnotherCardIssuer:
+			fee = s.calculateFee(amount, false)
+			fmt.Println("Transfer from another issuer card: " + from)
+			error = ErrSourceCardNotFound
+		default:
+			panic("unknown error")
+		}
 	}
+	toCard, err := s.CardSvc.SearchByNumber(to)
+	if err == nil {
+		toMain = true
+	} else {
+		switch err {
+		case card.ErrAnotherCardIssuer:
+			fmt.Println("Transfer to another issuer card: " + to)
+			error = ErrTargetCardNotFound
+		default:
+			panic("unknown error")
+		}
+	}
+
 	total = amount + fee
 
-	if fromCard != nil {
+	if fromMain {
 		if fromCard.Balance < total {
 			return total, ErrNotEnoughMoney
 		}
@@ -58,7 +83,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, error e
 		}
 	}
 
-	if toCard != nil {
+	if toMain {
 		card.Deposit(toCard, amount)
 		s.TransactionSvc.AddTransaction(&transaction.Transaction{
 			Card:   toCard,
@@ -68,7 +93,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, error e
 		})
 	}
 
-	return total, nil
+	return total, error
 
 }
 
