@@ -6,6 +6,8 @@ import (
 	"github.com/DorokhinVA/go_hw_2.2/pkg/card"
 	"github.com/DorokhinVA/go_hw_2.2/pkg/transaction"
 	"math"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -22,12 +24,22 @@ func NewService(cardSvc *card.Service, mainFeePercent float64, anotherFeePercent
 }
 
 var (
-	ErrNotEnoughMoney     = errors.New("not enough money on source card")
-	ErrSourceCardNotFound = errors.New("source card not found")
-	ErrTargetCardNotFound = errors.New("target card not found")
+	ErrNotEnoughMoney          = errors.New("not enough money on source card")
+	ErrSourceCardNotFound      = errors.New("source card not found")
+	ErrTargetCardNotFound      = errors.New("target card not found")
+	ErrInvalidSourceCardNumber = errors.New("source card number is invalid")
+	ErrInvalidTargetCardNumber = errors.New("target card number is invalid")
 )
 
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, error error) {
+	if !s.validateNumberByLune(from) {
+		return total, ErrInvalidSourceCardNumber
+	}
+
+	if !s.validateNumberByLune(to) {
+		return total, ErrInvalidTargetCardNumber
+	}
+
 	var fromMain bool
 	var toMain bool
 	var fee int64
@@ -112,4 +124,12 @@ func (s *Service) calculateFee(amount int64, main bool) int64 {
 	}
 
 	return int64(fee)
+}
+
+func (s *Service) validateNumberByLune(number string) bool {
+	actual, err := strconv.Atoi(strings.ReplaceAll(number, " ", ""))
+	if err != nil {
+		return false
+	}
+	return IsValid(actual)
 }

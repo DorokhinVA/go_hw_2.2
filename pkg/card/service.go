@@ -14,7 +14,8 @@ func NewService(bankName string) *Service {
 	return &Service{BankName: bankName}
 }
 
-const MainCardPrefix = "5106 21"
+//const MainCardPrefix = "5106 21"
+const MainCardPrefix = "51"
 
 var (
 	ErrAnotherCardIssuer = errors.New("another card issuer")
