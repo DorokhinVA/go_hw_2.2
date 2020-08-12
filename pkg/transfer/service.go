@@ -29,6 +29,7 @@ var (
 	ErrTargetCardNotFound      = errors.New("target card not found")
 	ErrInvalidSourceCardNumber = errors.New("source card number is invalid")
 	ErrInvalidTargetCardNumber = errors.New("target card number is invalid")
+	ErrWhileTransfer           = errors.New("error while transfer money")
 )
 
 func (s *Service) Card2Card(from, to string, amount int64) (total int64, error error) {
@@ -55,7 +56,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, error e
 			fmt.Println("Transfer from another issuer card: " + from)
 			error = ErrSourceCardNotFound
 		default:
-			panic("unknown error")
+			return 0, ErrWhileTransfer
 		}
 	}
 	toCard, err := s.CardSvc.SearchByNumber(to)
@@ -67,7 +68,7 @@ func (s *Service) Card2Card(from, to string, amount int64) (total int64, error e
 			fmt.Println("Transfer to another issuer card: " + to)
 			error = ErrTargetCardNotFound
 		default:
-			panic("unknown error")
+			return 0, ErrWhileTransfer
 		}
 	}
 

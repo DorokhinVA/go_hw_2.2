@@ -14,11 +14,11 @@ func NewService(bankName string) *Service {
 	return &Service{BankName: bankName}
 }
 
-//const MainCardPrefix = "5106 21"
-const MainCardPrefix = "51"
+const MainCardPrefix = "5106 22"
 
 var (
 	ErrAnotherCardIssuer = errors.New("another card issuer")
+	ErrValidCardNotFound = errors.New("couldn`t find card by valid number")
 )
 
 func (s *Service) IssueCard(issuer string, currency string) *Card {
@@ -26,7 +26,7 @@ func (s *Service) IssueCard(issuer string, currency string) *Card {
 		Issuer:   issuer,
 		Balance:  0,
 		Currency: currency,
-		Number:   "5106 2100 0000 0000",
+		Number:   "5106 2200 0000 0000",
 		Icon:     "https://...",
 	}
 	s.Cards = append(s.Cards, card)
@@ -44,7 +44,7 @@ func (s *Service) SearchByNumber(number string) (card *Card, err error) {
 		}
 	}
 
-	panic("couldn`t find card by valid number: " + number)
+	return nil, ErrValidCardNotFound
 }
 
 func (s *Service) verifyCardNumber(number string) bool {
